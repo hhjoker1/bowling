@@ -44,7 +44,9 @@ class Frame {
 
     /**
      * Sets the number of pins of the current role.
-     * Could be called only MAX_ROLES_PER_FRAME times (or MAX_ROLES_IN_FINAL_FRAME times, if this is the last {@link Frame})
+     * Could be called only MAX_ROLES_PER_FRAME times (or MAX_ROLES_IN_FINAL_FRAME times, if this is the last {@link Frame}).
+     * If first role was a Strike, no further role is possible.
+     * In the last frame, if first role was not a Strike and second role was not a spare, no further role is possible.
      * @param pins the number of pins dropped in the current role
      * @throws IllegalPinNumberException thrown, if the number of pins is below zero or above MAX_PINS
      * @throws IllegalRoleNumberException thrown, if the method is called too often
@@ -55,6 +57,15 @@ class Frame {
         }
 
         if (roleNumber < getMaxRoles()) {
+            if (isLastFrame()) {
+                if (!isStrike() && !isSpare() && roleNumber == 2) {
+                    throw new IllegalRoleNumberException();
+                }
+            } else {
+                if (isStrike() && roleNumber == 1) {
+                    throw new IllegalRoleNumberException();
+                }
+            }
             pinsRolled.add(roleNumber++, pins);
         } else {
             throw new IllegalRoleNumberException();
@@ -104,7 +115,7 @@ class Frame {
      * @return true, if this frame is completed
      */
     public boolean isFrameComplete() {
-        return isStrike() || isSpare() || allRolesPlayed();
+        return (!isLastFrame() && (isStrike() || isSpare())) || allRolesPlayed();
     }
 
     /**
@@ -112,10 +123,7 @@ class Frame {
      * @return true if all roles are played
      */
     private boolean allRolesPlayed() {
-        if (pinsRolled.size() == getMaxRoles()) {
-            return pinsRolled.stream().allMatch(pr -> INITIAL_ROLE_VALUE != pr);
-        }
-        return false;
+        return pinsRolled.size() == getMaxRoles();
     }
 
     /**
@@ -123,7 +131,7 @@ class Frame {
      * @return true, if this {@link Frame} is a Strike
      */
     public boolean isStrike() {
-        return pinsRolled.stream().anyMatch(pr -> pr == MAX_PINS);
+        return pinsRolled.size() > 0 && pinsRolled.get(0) == MAX_PINS;
     }
 
     /**
@@ -131,6 +139,6 @@ class Frame {
      * @return true, if this {@link Frame} is a Spare
      */
     public boolean isSpare() {
-        return !isStrike() && MAX_PINS == getFrameScore();
+        return !isStrike() && pinsRolled.size() > 1 && pinsRolled.get(0) + pinsRolled.get(1) == Frame.MAX_PINS;
     }
 }
