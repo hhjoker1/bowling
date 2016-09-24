@@ -90,7 +90,6 @@ public class FrameTest {
         if (role2 != null) {
             if (frame.isStrike() && !frame.isLastFrame()) {
                 exception.expect(IllegalRoleNumberException.class);
-                frame.setPinsRolled(role2);
             }
             frame.setPinsRolled(role2);
             totalScore = frame.getFrameScore();
