@@ -28,16 +28,6 @@ public class FrameTest {
     private Integer role2 = null;
     private Integer role3 = null;
 
-    @Before
-    public void setUp() throws Exception {
-        frame = new Frame(frameNumber);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        frame = null;
-    }
-
     public FrameTest(Integer frameNumber, Integer role1, Integer role2, Integer role3) {
         this.frameNumber = frameNumber;
         this.role1 = role1;
@@ -66,6 +56,12 @@ public class FrameTest {
 
     @Test
     public void testFrame() throws Exception {
+
+        if (frameNumber < 1 || frameNumber > Game.MAX_FRAMES) {
+            exception.expect(IllegalFrameNumberException.class);
+        }
+
+        frame = new Frame(frameNumber);
 
         Assert.assertFalse("Frame is NOT expected to be complete before the first role.", frame.isFrameComplete());
 
